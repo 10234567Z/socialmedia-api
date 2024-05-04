@@ -1,6 +1,5 @@
-const postgres = require('postgres')
+const { createClient } = require("@supabase/supabase-js")
+// Create a single supabase client for interacting with your database
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY)
 
-const connectionString = process.env.DATABASE_URL
-const sql = postgres(connectionString)
-
-module.exports = sql
+module.exports = supabase

@@ -1,9 +1,7 @@
 const express = require('express');
 const session = require('express-session');
 const cors = require('cors');
-const sql = require('./config/db');
 const app = express();
-
 const indexRouter = require('./routes/indexRouter');
 const postsRouter = require('./routes/postsRouter');
 const authRouter = require('./routes/authRouter');
@@ -20,6 +18,4 @@ app.use('/sg', authRouter)
 app.use('/u', usersRouter)
 
 app.listen(3000, () => console.log("app listening on port 3000!"));
-
-
 module.exports = app
