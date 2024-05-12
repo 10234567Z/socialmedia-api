@@ -27,21 +27,37 @@ exports.signup = [
             email: req.body.email,
             password: req.body.password,
             email_confirm: true,
-            user_metadata: { name: req.body.username }
+            user_metadata: { 
+                name: req.body.username,
+                posts: 0,
+                comments: 0,
+                likedposts: 0,
+                likedcomments: 0,
+                following: 0,
+                followers: 0,
+                bio: "",
+                profile_pic: "",
+            }
         })
         if (authError) {
             return res.status(400).json({ error: authError.message })
         }
         const { data, error } = await supabase.from('users').insert({
+            uuid: authData.user.id,
             username: req.body.username,
             email: req.body.email,
-            i_at: ((new Date()).toISOString()).toLocaleString('en-US')
         }).select()
         if (error) {
             return res.status(400).json({ error: error.message })
         }
-        res.json({ supabase_user_data: authData, user_data: data })
-    })
+        const { data: si_authData, error: si_authError } = await supabase.auth.signInWithPassword({
+            email: req.body.email,
+            password: req.body.password,
+        })
+        if (si_authError) {
+            return res.status(400).json({ error: si_authError.message })
+        }
+        res.json({ supabase_user_data: si_authData})    })
 ]
 
 exports.signin = asyncHandler(async (req, res) => {
