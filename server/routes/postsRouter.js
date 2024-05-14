@@ -4,7 +4,7 @@ const router = express.Router();
 const app = express()
 
 router.get("/:postId" , getPost)
-router.post("/:postId" , createPost)
+router.post("/" , createPost)
 router.delete("/:postId" , deletePost)
 router.put("/:postId" , updatePost)
 

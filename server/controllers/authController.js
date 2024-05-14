@@ -57,7 +57,7 @@ exports.signup = [
         if (si_authError) {
             return res.status(400).json({ error: si_authError.message })
         }
-        res.json({ supabase_user_data: si_authData})    })
+        res.status(200).json({ supabase_user_data: si_authData})    })
 ]
 
 exports.signin = asyncHandler(async (req, res) => {
@@ -68,11 +68,14 @@ exports.signin = asyncHandler(async (req, res) => {
     if (authError) {
         return res.status(400).json({ error: authError.message })
     }
-    res.json({ supabase_user_data: authData})
+    res.status(200).json({ supabase_user_data: authData})
 })
 
 
 exports.signOut = asyncHandler(async (req, res) => {
     const { data, error } = await supabase.auth.signOut()
-    res.json(data)
+    if (error) {
+        return res.status(400).json({ error: error.message })
+    }
+    res.status(200).json(data)
 })
