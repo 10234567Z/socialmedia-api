@@ -251,3 +251,224 @@ exports.getLikes = asyncHandler(async (req, res) => {
   }
   res.status(200).json(likes);
 });
+
+/**********************************
+ *  Comments Controller
+ **********************************/
+exports.postNewComment = [
+  body("comment").notEmpty().withMessage("Comment cannot be empty"),
+  asyncHandler(async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    /** Fetch the post for updating later */
+    const { data: post, error: postError } = await supabase
+      .from("posts")
+      .select()
+      .eq("post_id", req.params.postId);
+    if (postError) {
+      return res.status(400).json({ error: postError.message });
+    }
+    const date = new Date();
+
+    /** Insert the comment */
+    const { data: commentData, error: commentError } = await supabase
+      .from("comments")
+      .insert({
+        user_id: user.id,
+        post_id: req.params.postId,
+        content: req.body.comment,
+        i_at: date.toISOString(),
+        replied_to: null,
+      })
+      .select();
+    if (commentError) {
+      return res.status(400).json({ error: commentError.message });
+    }
+
+    /** Update the post */
+    const { error: postUpdateError } = await supabase
+      .from("posts")
+      .update({
+        comments: post[0].comments + 1,
+      })
+      .eq("post_id", req.params.postId);
+    if (postUpdateError) {
+      return res.status(400).json({ error: postUpdateError.message });
+    }
+
+    /** Update the user */
+    const { error } = await adminAuthClient.updateUserById(user.id, {
+      user_metadata: { comments: user.user_metadata.comments + 1 },
+    });
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+    res.status(200).json({ comment: commentData });
+  }),
+];
+
+exports.getComments = asyncHandler(async (req, res) => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  const { data: comments, error: fetchError } = await supabase
+    .from("comments")
+    .select()
+    .eq("post_id", req.params.postId);
+  if (fetchError) {
+    return res.status(400).json({ error: fetchError.message });
+  }
+  res.status(200).json(comments);
+});
+
+exports.updateComment = [
+  body("comment").notEmpty().withMessage("Comment cannot be empty"),
+  asyncHandler(async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    /** Update the comment */
+    const { data: commentData, error: updateError } = await supabase
+      .from("comments")
+      .update({
+        content: req.body.comment,
+      })
+      .eq("comment_id", req.params.commentId)
+      .select();
+    if (updateError) {
+      return res.status(400).json({ error: updateError.message });
+    }
+    res.status(200).json({ comment: commentData });
+  }),
+];
+
+exports.deleteComment = asyncHandler(async (req, res) => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  /** Fetch the post */
+  const { data: post, error: fetchError } = await supabase
+    .from("posts")
+    .select()
+    .eq("post_id", req.params.postId);
+  if (fetchError) {
+    return res.status(400).json({ error: fetchError.message });
+  }
+
+  /** Delete the comment */
+  const { data: commentData, error: deleteError } = await supabase
+    .from("comments")
+    .delete()
+    .eq("comment_id", req.params.commentId);
+  if (deleteError) {
+    return res.status(400).json({ error: deleteError.message });
+  }
+
+  /** Update the post */
+  const { error: postUpdateError } = await supabase
+    .from("posts")
+    .update({
+      comments: post[0].comments - 1,
+    })
+    .eq("post_id", req.params.postId);
+  if (postUpdateError) {
+    return res.status(400).json({ error: postUpdateError.message });
+  }
+
+  /** Update the user */
+  const { error } = await adminAuthClient.updateUserById(user.id, {
+    user_metadata: { comments: user.user_metadata.comments - 1 },
+  });
+  if (error) {
+    return res.status(400).json({ error: error.message });
+  }
+  res.status(200).json(commentData);
+})
+
+exports.replyToComment = [
+  body("comment").notEmpty().withMessage("Comment cannot be empty"),
+  asyncHandler(async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    /** Fetch the post for updating later */
+    const { data: post, error: postError } = await supabase
+      .from("posts")
+      .select()
+      .eq("post_id", req.params.postId);
+    if (postError) {
+      return res.status(400).json({ error: postError.message });
+    }
+    const date = new Date();
+
+    /** Insert the comment */
+    const { data: commentData, error: commentError } = await supabase
+      .from("comments")
+      .insert({
+        user_id: user.id,
+        post_id: req.params.postId,
+        content: req.body.comment,
+        i_at: date.toISOString(),
+        replied_to: req.params.replyId,
+      })
+      .select();
+    if (commentError) {
+      return res.status(400).json({ error: commentError.message });
+    }
+
+    /** Update the post */
+    const { error: postUpdateError } = await supabase
+      .from("posts")
+      .update({
+        comments: post[0].comments + 1,
+      })
+      .eq("post_id", req.params.postId);
+    if (postUpdateError) {
+      return res.status(400).json({ error: postUpdateError.message });
+    }
+
+    /** Update the user */
+    const { error } = await adminAuthClient.updateUserById(user.id, {
+      user_metadata: { comments: user.user_metadata.comments + 1 },
+    });
+    if (error) {
+      return res.status(400).json({ error: error.message });
+    }
+    res.status(200).json({ comment: commentData });
+  }),
+];
