@@ -12,7 +12,11 @@ const {
   replyToComment,
   updateComment,
   deleteComment,
+  getCommentLikes,
+  likeComment,
+  unlikeComment,
 } = require("../controllers/postController");
+
 const router = express.Router();
 const app = express();
 
@@ -31,4 +35,7 @@ router.post("/:postId/comment/:commentId", replyToComment);
 router.put("/:postId/comment/:commentId", updateComment);
 router.delete("/:postId/comment/:commentId", deleteComment);
 
+router.get("/:postId/comment/:commentId/like" , getCommentLikes)
+router.post("/:postId/comment/:commentId/like", likeComment)
+router.delete("/:postId/comment/:commentId/like", unlikeComment)
 module.exports = router;

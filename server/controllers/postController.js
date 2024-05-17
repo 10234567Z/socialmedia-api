@@ -409,7 +409,7 @@ exports.deleteComment = asyncHandler(async (req, res) => {
     return res.status(400).json({ error: error.message });
   }
   res.status(200).json(commentData);
-})
+});
 
 exports.replyToComment = [
   body("comment").notEmpty().withMessage("Comment cannot be empty"),
@@ -472,3 +472,133 @@ exports.replyToComment = [
     res.status(200).json({ comment: commentData });
   }),
 ];
+
+/***************************
+ * Comment Likes Controller
+ ***************************/
+
+exports.likeComment = asyncHandler(async (req, res) => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  /** Check if the comment is already liked by user */
+  const { data: duplicate, error: duplicateError } = await supabase
+    .from("commentlikes")
+    .select()
+    .eq("likedcomment", req.params.commentId)
+    .eq("user_id", user.id);
+  if (duplicate.length !== 0) {
+    return res
+      .status(400)
+      .json({ error: "You have already liked this comment" });
+  }
+
+  /** Fetch the comment */
+  const { data: fetchComment, error: fetchError } = await supabase
+    .from("comments")
+    .select()
+    .eq("comment_id", req.params.commentId);
+  if (fetchError) {
+    return res.status(400).json({ error: fetchError.message });
+  }
+
+  /** Add the like record in commentlikes table */
+  const { error: likeError } = await supabase.from("commentlikes").insert({
+    likedcomment: req.params.commentId,
+    user_id: user.id,
+  });
+  if (likeError) {
+    return res.status(400).json({ error: likeError.message });
+  }
+
+  /** Update likes on fetched comment */
+  const { error: updateError } = await supabase
+    .from("comments")
+    .update({
+      likes: fetchComment[0].likes + 1,
+    })
+    .eq("comment_id", req.params.commentId);
+  if (updateError) {
+    return res.status(400).json({ error: updateError.message });
+  }
+
+  /** Finally, update the number of likes in user profile */
+  const { error } = await adminAuthClient.updateUserById(user.id, {
+    user_metadata: { likedcomments: user.user_metadata.likedcomments + 1 },
+  });
+  if (error) {
+    return res.status(400).json({ error: error.message });
+  }
+
+  res.status(200).json({ message: "Comment Liked" });
+});
+
+exports.unlikeComment = asyncHandler(async (req, res) => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+
+  /** Delete the like record in commentlikes table */
+  const { error: likeError } = await supabase
+    .from("commentlikes")
+    .delete()
+    .eq("likedcomment", req.params.commentId)
+    .eq("user_id", user.id);
+  if (likeError) {
+    return res.status(400).json({ error: likeError.message });
+  }
+
+  /** Fetch the comment */
+  const { data: fetchComment, error: fetchError } = await supabase
+    .from("comments")
+    .select()
+    .eq("comment_id", req.params.commentId);
+  if (fetchError) {
+    return res.status(400).json({ error: fetchError.message });
+  }
+
+  /** Update likes on fetched comment */
+  const { error: updateError } = await supabase
+    .from("comments")
+    .update({
+      likes: fetchComment[0].likes - 1,
+    })
+    .eq("comment_id", req.params.commentId);
+  if (updateError) {
+    return res.status(400).json({ error: updateError.message });
+  }
+
+  /** Finally, update the number of likes in user profile */
+  const { error } = await adminAuthClient.updateUserById(user.id, {
+    user_metadata: { likedcomments: user.user_metadata.likedcomments - 1 },
+  });
+  if (error) {
+    return res.status(400).json({ error: error.message });
+  }
+
+  res.status(200).json({ message: "Comment unliked" });
+});
+
+exports.getCommentLikes = asyncHandler(async (req, res) => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  const { data: likes, error: fetchError } = await supabase
+    .from("commentlikes")
+    .select()
+    .eq("likedcomment", req.params.commentId);
+  if (fetchError) {
+    return res.status(400).json({ error: fetchError.message });
+  }
+  res.status(200).json(likes);
+});
