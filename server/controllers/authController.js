@@ -33,8 +33,6 @@ exports.signup = [
                 comments: 0,
                 likedposts: 0,
                 likedcomments: 0,
-                following: 0,
-                followers: 0,
                 bio: "",
                 profile_pic: "",
             }

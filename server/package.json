@@ -20,7 +20,8 @@
     "express-async-handler": "^1.2.0",
     "express-session": "^1.18.0",
     "express-validator": "^7.0.1",
-    "socket.io": "^4.7.5"
+    "socket.io": "^4.7.5",
+    "uuid-by-string": "^4.0.0"
   },
   "devDependencies": {
     "chai": "^5.1.0",
