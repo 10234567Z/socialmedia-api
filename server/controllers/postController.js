@@ -585,3 +585,20 @@ exports.unlikeComment = asyncHandler(async (req, res) => {
 
   res.status(200).json({ message: "Comment unliked" });
 });
+
+exports.getCommentLikes = asyncHandler(async (req, res) => {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  const { data: likes, error: fetchError } = await supabase
+    .from("commentlikes")
+    .select()
+    .eq("likedcomment", req.params.commentId);
+  if (fetchError) {
+    return res.status(400).json({ error: fetchError.message });
+  }
+  res.status(200).json(likes);
+});

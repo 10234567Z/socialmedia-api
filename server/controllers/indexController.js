@@ -46,23 +46,18 @@ exports.getRecentFollowerPosts = asyncHandler(async (req, res) => {
   res.status(200).json(followingPost);
 });
 
-exports.getCommentLikes = asyncHandler(async (req, res) => {
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-  const { data: likes, error: fetchError } = await supabase
-    .from("commentlikes")
-    .select()
-    .eq("likedcomment", req.params.commentId);
-  if (fetchError) {
-    return res.status(400).json({ error: fetchError.message });
-  }
-  res.status(200).json(likes);
-});
-
 exports.getRandomPosts = asyncHandler(async (req, res) => {
-  res.json({ message: "Random Posts" });
+    const { data:  {user}} = await supabase.auth.getUser();
+    if (!user) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
+    const { data: posts, error: fetchError } = await supabase
+        .from("posts")
+        .select()
+        .order("i_at", { ascending: false })
+        .limit(10);
+    if (fetchError) {
+        return res.status(400).json({ error: fetchError.message });
+    }
+    res.status(200).json(posts);
 });
