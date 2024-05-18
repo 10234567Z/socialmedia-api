@@ -1,8 +1,8 @@
 const express = require('express');
-const { getHome } = require('../controllers/indexController');
+const { getRecentFollowerPosts } = require('../controllers/indexController');
 const router = express.Router();
 const app = express()
 
-router.get('/', getHome)
+router.get('/', getRecentFollowerPosts)
 
 module.exports = router

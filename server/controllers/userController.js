@@ -273,7 +273,7 @@ exports.getFollowing = asyncHandler(async (req, res) => {
     if (fetchError) {
       return res.status(400).json({ error: fetchError.message });
     }
-    followers.push(userData.user.user_metadata);
+    followers.push(userData.user);
   }
   res.status(200).json(followers);
 });
