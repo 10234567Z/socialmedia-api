@@ -2,15 +2,15 @@
 import Link from "next/link";
 import Image from "next/image";
 import './navbar.css';
-import { useEffect, useState } from "react";
-import { createClient } from "@/utils/supabase/client";
+import React, { useEffect, useState } from "react";
+import useSignedIn from "@/hooks/useSignedIn";
+interface NavbarProps { 
+    signedIn: boolean
+}
 
-export default function Navbar() {
+const Navbar: React.FC<NavbarProps> = ({ signedIn }) => {
     const TOP_OFFSET = 10;
     const [showBackground, setShowBackground] = useState(false)
-    const [signedIn, setSignedIn] = useState<boolean>(false)
-    const supabase = createClient()
-
     useEffect(() => {
         if(window.scrollY >= TOP_OFFSET) setShowBackground(true)
         const handleScroll = () => {
@@ -20,15 +20,7 @@ export default function Navbar() {
                 setShowBackground(false)
             }
         }
-
-        async function checkSession() {
-            const { data: { user: session } } = await supabase.auth.getUser()
-            if (session) {
-                setSignedIn(true)
-            }
-        }
         window.addEventListener('scroll', handleScroll);
-        checkSession()
         return () => {
             window.removeEventListener('scroll', handleScroll);
         }
@@ -81,3 +73,5 @@ export default function Navbar() {
         </>
     )
 }
+
+export default Navbar;

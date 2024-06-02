@@ -14,6 +14,6 @@ export default async function Logout() {
     }
 
     return (
-        <></>
+        <> Logging out....</>
     )
 }

@@ -2,17 +2,18 @@
 import { createClient } from '@/utils/supabase/client'
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
+import Navbar from './components/navbar'
 
 export default function Page() {
   const supabase = createClient()
 
   const [signedIn, setSignedIn] = useState<boolean>(false)
-  const [loading , setLoading] = useState<boolean>(true)
+  const [loading, setLoading] = useState<boolean>(true)
   const router = useRouter()
 
   useEffect(() => {
     async function checkSession() {
-      const {data: {user: session}} = await supabase.auth.getUser()
+      const { data: { user: session } } = await supabase.auth.getUser()
       if (session) {
         setSignedIn(true)
         setLoading(false)
@@ -25,18 +26,23 @@ export default function Page() {
   }, [])
 
   return (
+
     loading ?
       <div>
         <h1>Loading...</h1>
       </div>
       :
-    (signedIn ?
-      <div>
-        <h1>Page</h1>
-      </div>
-      :
-      <div>
-        <h1>Redirecting...</h1>
-      </div>)
+      <>
+        <Navbar signedIn={signedIn} />
+        {signedIn ?
+        <>
+          <h1>Page</h1>
+        </>
+        :
+        <>
+          <h1>Redirecting...</h1>
+        </>}
+      </>
+
   )
 }
