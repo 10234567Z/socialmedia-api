@@ -3,16 +3,13 @@ const app = express();
 const cors = require('cors')
 const http = require('http');
 const server = http.createServer(app);
-const session = require('cookie-session');
-
-const sessionMiddleware = session({
+const session = require('express-session');
+app.use(cors())
+app.use(session({
     secret: process.env.SECRET,
     resave: false,
     saveUninitialized: true,
-})
-
-app.use(cors())
-app.use(sessionMiddleware);
+}));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json())
 
