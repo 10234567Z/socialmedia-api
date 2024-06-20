@@ -7,6 +7,7 @@ app.use(session({
     secret: process.env.SECRET,
     resave: false,
     saveUninitialized: true,
+    cookie: { maxAge: 3600000 }
 }));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json())
