@@ -3,14 +3,12 @@ const app = express();
 const cors = require('cors')
 const http = require('http');
 const server = http.createServer(app);
-const session = require('express-session');
+const session = require('cookie-session');
 
-app.set('trust proxy', 1) // trust first proxy
 const sessionMiddleware = session({
     secret: process.env.SECRET,
     resave: false,
     saveUninitialized: true,
-    cookie: { secure: true }
 })
 
 app.use(cors())
@@ -33,4 +31,3 @@ server.listen(3001, () => {
 });
 
 module.exports = app
-
