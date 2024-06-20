@@ -4,7 +4,7 @@
   "main": "app.js",
   "scripts": {
     "test": "mocha",
-    "start": "nodemon --env-file=.env app.js",
+    "start": "node --env-file=.env app.js",
     "vercel-build": "echo Starting"
   },
   "keywords": [],
