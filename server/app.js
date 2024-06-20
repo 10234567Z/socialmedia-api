@@ -25,5 +25,3 @@ app.use('/u', usersRouter)
 app.listen(3001, () => {
     console.log('listening on :3001');
 });
-
-module.exports = app
