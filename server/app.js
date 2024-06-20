@@ -23,7 +23,7 @@ app.use('/p', postsRouter)
 app.use('/sg', authRouter)
 app.use('/u', usersRouter)
 
-server.listen(3001, () => {
+app.listen(3001, () => {
     console.log('listening on :3001');
 });
 
